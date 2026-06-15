@@ -76,6 +76,31 @@ void debito(char *archivo_montos, int p[], DatosCompartidos *memoria) {
     close(p[1]); // Le avisamos al padre que ya no vamos a mandar más nada.
 }
 int main();{
+  int pipe_credito[2];        
+    int pipe_debito[2];         
+    pid_t pid_credito, pid_debito;  
+
+    printf("Padre: Preparando el entorno...\n");
+   DatosCompartidos *memoria = mmap(NULL, sizeof(DatosCompartidos),        
+                                     PROT_READ | PROT_WRITE,                
+                                     MAP_SHARED | MAP_ANONYMOUS, -1, 0);    
+    if (memoria == MAP_FAILED) {
+        perror("Error al crear la memoria compartida");
+        exit(1);
+    }
+
+    memoria->saldo = 0.0; 
     
+    if (sem_init(&memoria->semaforo, 1, 1) == -1) {     
+        perror("Error al inicializar el semáforo");
+        exit(1);
+    }
+
+    if (pipe(pipe_credito) == -1 || pipe(pipe_debito) == -1) {      
+        perror("Error al crear los pipes");
+        exit(1);
+    }
+
+    printf("Padre: Memoria, semáforo y pipes listos.\n");
     return 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     }
