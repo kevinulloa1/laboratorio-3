@@ -87,7 +87,7 @@ int main();{
     if (memoria == MAP_FAILED) {
         perror("Error al crear la memoria compartida");
         exit(1);
-    }
+    }                               
 
     memoria->saldo = 0.0; 
     
@@ -131,8 +131,49 @@ int main();{
         
         exit(0); 
     }
-
+    
+    close(pipe_credito[1]);
+    close(pipe_debito[1]);
 
     printf("Padre: Hijos creados correctamente. Esperando los reportes...\n");
+
+    double monto_leido;
+    int activo_credito = 1; 
+    int activo_debito = 1;
+
+    while (activo_credito == 1 || activo_debito == 1) {
+        
+        if (activo_credito == 1) {
+            if (read(pipe_credito[0], &monto_leido, sizeof(double)) > 0) {
+                printf("Padre: El hijo CRÉDITO sumó $%.2f\n", monto_leido);
+            } else {
+                activo_credito = 0; 
+            }
+        }
+
+        if (activo_debito == 1) {
+            if (read(pipe_debito[0], &monto_leido, sizeof(double)) > 0) {
+                printf("Padre: El hijo DÉBITO restó $%.2f\n", monto_leido);
+            } else {
+                activo_debito = 0; 
+            }
+        }
+    }
+
+    wait(NULL);
+    wait(NULL);
+
+    printf("\n========================================\n");
+    printf("  SALDO FINAL: $%.2f\n", memoria->saldo);
+    printf("========================================\n");
+
+    close(pipe_credito[0]);         
+    close(pipe_debito[0]);
+    sem_destroy(&memoria->semaforo); 
+    munmap(memoria, sizeof(DatosCompartidos)); 
+
+    printf("Programa finalizado correctamente.\n");
+
     return 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     }
+                                
