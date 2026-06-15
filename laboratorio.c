@@ -102,5 +102,37 @@ int main();{
     }
 
     printf("Padre: Memoria, semáforo y pipes listos.\n");
+    pid_credito = fork();       
+
+    if (pid_credito < 0) {
+        perror("Error al crear el hijo credito");
+        exit(1);
+    } else if (pid_credito == 0) {
+        close(pipe_credito[0]); 
+        close(pipe_debito[0]);  
+        close(pipe_debito[1]);
+
+        credito("credito.txt", pipe_credito, memoria);
+        
+        exit(0); 
+    }
+
+    pid_debito = fork();
+
+    if (pid_debito < 0) {
+        perror("Error al crear el hijo debito");
+        exit(1);
+    } else if (pid_debito == 0) {
+        close(pipe_debito[0]);  
+        close(pipe_credito[0]); 
+        close(pipe_credito[1]);
+
+        debito("debito.txt", pipe_debito, memoria);
+        
+        exit(0); 
+    }
+
+
+    printf("Padre: Hijos creados correctamente. Esperando los reportes...\n");
     return 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     }
